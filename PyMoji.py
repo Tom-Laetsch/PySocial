@@ -10,15 +10,13 @@ from os.path import isfile, join, dirname
 import re
 
 save_dir = join(dirname(__file__), '.pymoji_saved/')
+emoji_list_version_fp = '.emoji_list_fps'
 
 class PyMoji(object):
-    def __init__( self, save_dir = save_dir,
-                  emoji_list_version_fp = '.emoji_list_fps',
+    def __init__( self,
                   try_load_first = True,
                   save_on_update = True,
                   version = -1 ):
-        self.save_dir = save_dir
-        self.emoji_list_version_fp = emoji_list_version_fp
         self.version = -1
         self.emoji_list = None
         if try_load_first:
@@ -49,12 +47,12 @@ class PyMoji(object):
                 pass
         emoji_list = sorted(emoji_list, key = lambda x: len(x[0]), reverse = True)
         if save_pickle:
-            filename = self.save_dir + '%s_emoji_list.pickle' % datetime.isoformat(datetime.now())
+            filename = save_dir + '%s_emoji_list.pickle' % datetime.isoformat(datetime.now())
             try:
                 with open(filename, 'wb') as fout:
                     pickle.dump(obj = emoji_list, file = fout, protocol = 2)
                 if isfile(filename):
-                    fsaved_names = join(self.save_dir, self.emoji_list_version_fp)
+                    fsaved_names = join(save_dir, emoji_list_version_fp)
                     if isfile(fsaved_names):
                         #if this file already exists, add \n
                         with open(fsaved_names, 'a') as fsaved:
@@ -70,7 +68,7 @@ class PyMoji(object):
     def load_emoji_list( self, version = -1, verbose = True ):
         # version is a negative int with -1 most recent, and -n the nth previously saved version.
         filenames = []
-        fsaved_names = join(self.save_dir, self.emoji_list_version_fp)
+        fsaved_names = join(save_dir, emoji_list_version_fp)
         try:
             with open(fsaved_names, 'r') as fsaved:
                 for name in fsaved:
@@ -86,7 +84,7 @@ class PyMoji(object):
                     emoji_list = pickle.load(fin, encoding = 'latin1')
                 except TypeError:
                     emoji_list = pickle.load(fin)
-            print("Imported emoji list from date: %s" % filename[len(self.save_dir):-18])
+            print("Imported emoji list from date: %s" % filename[len(save_dir):-18])
         except IOError:
             if verbose: print("No saved emoji list files found. To create one, run update_emoji_list().")
             return None
