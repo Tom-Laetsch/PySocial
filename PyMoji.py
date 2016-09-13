@@ -6,11 +6,10 @@ try:
 except:
     import pickle
 from datetime import datetime
-from os.path import isfile, join
+from os.path import isfile, join, dirname
 import re
 
-import os
-save_dir = os.path.join(os.path.dirname(__file__), '.pymoji_saved')
+save_dir = join(dirname(__file__), '.pymoji_saved/')
 
 class PyMoji(object):
     def __init__( self, save_dir = save_dir,
@@ -51,18 +50,21 @@ class PyMoji(object):
         emoji_list = sorted(emoji_list, key = lambda x: len(x[0]), reverse = True)
         if save_pickle:
             filename = self.save_dir + '%s_emoji_list.pickle' % datetime.isoformat(datetime.now())
-            with open(filename, 'wb') as fout:
-                pickle.dump(obj = emoji_list, file = fout, protocol = 2)
-            if isfile(filename):
-                fsaved_names = join(self.save_dir, self.emoji_list_version_fp)
-                if isfile(fsaved_names):
-                    #if this file already exists, add \n
-                    with open(fsaved_names, 'a') as fsaved:
-                        fsaved.write('\n' + filename)
-                else:
-                    #if file does not exist, do not add \n
-                    with open(fsaved_names, 'w') as fsaved:
-                        fsaved.write(filename)
+            try:
+                with open(filename, 'wb') as fout:
+                    pickle.dump(obj = emoji_list, file = fout, protocol = 2)
+                if isfile(filename):
+                    fsaved_names = join(self.save_dir, self.emoji_list_version_fp)
+                    if isfile(fsaved_names):
+                        #if this file already exists, add \n
+                        with open(fsaved_names, 'a') as fsaved:
+                            fsaved.write('\n' + filename)
+                    else:
+                        #if file does not exist, do not add \n
+                        with open(fsaved_names, 'w') as fsaved:
+                            fsaved.write(filename)
+            except IOError:
+                print("IOError: Could not save emoji list pickle file.")
         return emoji_list
 
     def load_emoji_list( self, version = -1, verbose = True ):

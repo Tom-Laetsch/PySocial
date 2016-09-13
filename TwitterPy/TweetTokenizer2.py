@@ -41,8 +41,6 @@ import re
 from nltk.compat import htmlentitydefs, int2byte, unichr
 
 ######## TOM ADDED CODE
-import sys, os
-sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 from PyMoji import PyMoji
 EMOJI_CLASS = PyMoji()
 EMOJI_RE = re.compile(EMOJI_CLASS.emoji_regex, re.UNICODE)
