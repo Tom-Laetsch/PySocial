@@ -9,8 +9,11 @@ from datetime import datetime
 from os.path import isfile, join
 import re
 
+import os
+save_dir = os.path.join(os.path.dirname(__file__), '.pymoji_saved')
+
 class PyMoji(object):
-    def __init__( self, save_dir = '.pymoji_saved/',
+    def __init__( self, save_dir = save_dir,
                   emoji_list_version_fp = '.emoji_list_fps',
                   try_load_first = True,
                   save_on_update = True,
