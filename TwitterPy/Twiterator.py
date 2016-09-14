@@ -21,7 +21,7 @@ def IOError_message(fpath):
     print("--Filenmame: %s" % basename(fpath))
     print("--Directory: %s." % dirname(fpath))
 
-class json_line_iterator(object):
+class JSON_Line_Iterator(object):
     #an iterator for tweets from json file
     def __init__(self, jsonfiles, verbose = False):
         self.jsonfiles = files_from_list(jsonfiles)
@@ -44,7 +44,7 @@ class json_line_iterator(object):
                 yield None
 
 
-class Tweet_Text_Twiterator(object):
+class Token_Twiterator(object):
         def __init__(self,
                      jsonfiles,
                      text_processor = 'TweetTokenizer',
@@ -52,7 +52,7 @@ class Tweet_Text_Twiterator(object):
                      condition = lambda x: True,
                      verbose = False,
                      **text_processor_kwargs):
-            self._json_line_iterator = json_line_iterator(jsonfiles, verbose)
+            self._JSON_Line_Iterator = JSON_Line_Iterator(jsonfiles, verbose)
             if text_processor == 'TweetTokenizer':
                 self.text_processor = TweetTokenizer(**text_processor_kwargs).tokenize
             else:
@@ -61,7 +61,7 @@ class Tweet_Text_Twiterator(object):
             self.condition = condition
 
         def __iter__(self):
-            for tweet in self._json_line_iterator:
+            for tweet in self._JSON_Line_Iterator:
                 try:
                     proc_text = [word for word in self.text_processor(tweet['text']) if word not in self.stop_words]
                     if self.condition(proc_text):
@@ -71,7 +71,7 @@ class Tweet_Text_Twiterator(object):
                 except KeyError:
                     pass
 
-class Doc2Vec_Twiterator(object):
+class D2V_Twiterator(object):
     def __init__(self,
                  jsonfiles,
                  text_processor = 'TweetTokenizer',
