@@ -47,11 +47,12 @@ class PyMoji(object):
                 pass
         emoji_list = sorted(emoji_list, key = lambda x: len(x[0]), reverse = True)
         if save_pickle:
-            filename = save_dir + '%s_emoji_list.pickle' % datetime.isoformat(datetime.now())
+            filename = '%s_emoji_list.pickle' % datetime.isoformat(datetime.now())
+            filepath = join(save_dir, filename)
             try:
-                with open(filename, 'wb') as fout:
+                with open(filepath, 'wb') as fout:
                     pickle.dump(obj = emoji_list, file = fout, protocol = 2)
-                if isfile(filename):
+                if isfile(filepath):
                     fsaved_names = join(save_dir, emoji_list_version_fp)
                     if isfile(fsaved_names):
                         #if this file already exists, add \n
@@ -79,12 +80,13 @@ class PyMoji(object):
         if abs(version) > len(filenames): version = 0
         filename = filenames[version]
         try:
-            with open(filename, 'rb') as fin:
+            filepath = join(save_dir,filename)
+            with open(filepath, 'rb') as fin:
                 try:
                     emoji_list = pickle.load(fin, encoding = 'latin1')
                 except TypeError:
                     emoji_list = pickle.load(fin)
-            print("Imported emoji list from date: %s" % filename[len(save_dir):-18])
+            print("Imported emoji list from date: %s" % filename[:-18])
         except IOError:
             if verbose: print("No saved emoji list files found. To create one, run update_emoji_list().")
             return None
