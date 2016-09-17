@@ -1,8 +1,9 @@
 from __future__ import print_function
 
-def tweet_lat_lon(tweet, verbose = False):
+def tweet_lon_lat(tweet, verbose = False):
     try:
-        return tweet['geo']['coordinates']
+        lat, lon = tweet['geo']['coordinates']
+        return lon, lat
     except Exception as e:
         if verbose:
             print("Exception %s retrieving geotag.")
@@ -16,7 +17,7 @@ def in_bounding_box(tweet,
     latmin = box[1]
     latmax = box[3]
 
-    lat, lon = tweet_lat_lon(tweet, verbose)
+    lon, lat = tweet_lon_lat(tweet, verbose)
     if lat != None and lon != None:
         if lonmin <= lon <= lonmax and latmin <= lat <= latmax:
             return True

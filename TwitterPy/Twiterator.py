@@ -118,8 +118,8 @@ class Geo_Twiterator(object):
 
     def __iter__(self):
         for tweet in self._JSON_Line_Iterator:
-            lat, lon = tweet_lat_lon(tweet, self.verbose)
-            if lat == None or lon == None:
+            lon, lat = tweet_lat_lon(tweet, self.verbose)
+            if lon == None or lat == None:
                 if not self.ret_wo_geo:
                     continue #skip to the next iteration
             if len(self.alt_ret) > 0:
@@ -129,6 +129,6 @@ class Geo_Twiterator(object):
                         ret_dict[key] = tweet[key]
                     except KeyError:
                         ret_dict[key] = None
-                yield lat, lon, ret_dict
+                yield lon, lat, ret_dict
             else:
-                yield lat, lon
+                yield lon, lat
