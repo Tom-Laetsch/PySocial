@@ -3,7 +3,7 @@ from os import listdir
 from os.path import isfile, isdir, join, basename, dirname
 from gensim.models.doc2vec import TaggedDocument
 from .TweetTokenizer2 import TweetTokenizer
-from .TwitterTools import tweet_lat_lon
+from .TwitterTools import tweet_lon_lat
 import json
 
 def files_from_list(files_path_dir):
@@ -118,7 +118,7 @@ class Geo_Twiterator(object):
 
     def __iter__(self):
         for tweet in self._JSON_Line_Iterator:
-            lon, lat = tweet_lat_lon(tweet, self.verbose)
+            lon, lat = tweet_lon_lat(tweet, self.verbose)
             if lon == None or lat == None:
                 if not self.ret_wo_geo:
                     continue #skip to the next iteration
