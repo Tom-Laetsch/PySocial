@@ -4,23 +4,8 @@ from os.path import isfile, isdir, join, basename, dirname
 from gensim.models.doc2vec import TaggedDocument
 from .TweetTokenizer2 import TweetTokenizer
 from .TwitterTools import tweet_lon_lat
+from .IO_Helpers import files_from_list, IOError_message
 import json
-
-def files_from_list(files_path_dir):
-    files = None
-    if type(files_path_dir) == list:
-        files = [f for f in files_path_dir if isfile(f)]
-    elif type(files_path_dir) == str:
-        if isdir(files_path_dir):
-            files = [join(files_path_dir,f) for f in listdir(files_path_dir) if isfile(join(files_path_dir,f))]
-        elif isfile(files_path_dir):
-            files = [files_path_dir]
-    return files
-
-def IOError_message(fpath):
-    print("IO Error")
-    print("--Filenmame: %s" % basename(fpath))
-    print("--Directory: %s." % dirname(fpath))
 
 class JSON_Line_Iterator(object):
     #an iterator for tweets from json file

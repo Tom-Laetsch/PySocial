@@ -1,4 +1,7 @@
-from __future__ import print_function
+from __future__ import print_function, division
+import numpy as np
+import pandas as pd
+from .IO_Helpers import files_from_list
 
 def tweet_lon_lat(tweet, verbose = False):
     try:
@@ -37,3 +40,12 @@ def in_bounding_box(tweet,
         #'geo' not in tweet.keys()
     #    return False
     #return False
+
+def JSON_to_DF(jsonfiles):
+    files = files_from_list(jsonfiles)
+    data_str = ''
+    for f in files:
+        with open(f, 'r') as fin:
+            data_str += ','.join(line.strip() for line in fin.readlines())
+    data_str = '[' + data_str + ']'
+    return pd.read_json(data_str)
