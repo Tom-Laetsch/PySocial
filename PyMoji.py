@@ -9,16 +9,22 @@ from datetime import datetime
 from os.path import isfile, join, dirname
 import re
 
-save_dir = join(dirname(__file__), '.pymoji_saved/')
-emoji_list_version_fp = '.emoji_list_fps'
-
 class PyMoji(object):
     def __init__( self,
                   try_load_first = True,
                   save_on_update = True,
                   version = -1,
-                  verbose = True ):
-        self._attr_setter( try_load_first, save_on_update, version, verbose )
+                  verbose = True,
+                  save_dir = join(dirname(__file__), '.pymoji_saved/'),
+                  emoji_list_version_fp = '.emoji_list_fps' ):
+
+
+        self._attr_setter( try_load_first,
+                           save_on_update,
+                           version,
+                           verbose,
+                           save_dir,
+                           emoji_list_version_fp )
 
     def _update_emoji_list( self, save_on_update = True ):
         emoji_url = 'http://unicode.org/emoji/charts/full-emoji-list.html'
@@ -44,12 +50,12 @@ class PyMoji(object):
         version_date = datetime.now().date().isoformat()
         if save_on_update:
             filename = '%s_emoji_list.pickle' % version_date
-            filepath = join(save_dir, filename)
+            filepath = join(self.save_dir, filename)
             try:
                 with open(filepath, 'wb') as fout:
                     pickle.dump(obj = emoji_list, file = fout, protocol = 2)
                 if isfile(filepath):
-                    fsaved_names = join(save_dir, emoji_list_version_fp)
+                    fsaved_names = join(self.save_dir, self.emoji_list_version_fp)
                     if isfile(fsaved_names):
                         #if this file already exists, add \n
                         with open(fsaved_names, 'a') as fsaved:
@@ -65,7 +71,7 @@ class PyMoji(object):
     def _load_emoji_list( self, version = -1, verbose = False ):
         # version is a negative int with -1 most recent, and -n the nth previously saved version.
         filenames = []
-        fsaved_names = join(save_dir, emoji_list_version_fp)
+        fsaved_names = join(self.save_dir, self.emoji_list_version_fp)
         try:
             with open(fsaved_names, 'r') as fsaved:
                 for name in fsaved:
@@ -76,7 +82,7 @@ class PyMoji(object):
         if abs(version) > len(filenames): version = 0
         filename = filenames[version]
         try:
-            filepath = join(save_dir,filename)
+            filepath = join(self.save_dir,filename)
             with open(filepath, 'rb') as fin:
                 try:
                     emoji_list = pickle.load(fin, encoding = 'latin1')
@@ -103,7 +109,11 @@ class PyMoji(object):
                      try_load_first = True,
                      save_on_update = True,
                      version = -1,
-                     verbose = False ):
+                     verbose = True,
+                     save_dir = join(dirname(__file__), '.pymoji_saved/'),
+                     emoji_list_version_fp = '.emoji_list_fps' ):
+        setattr(self, '_save_dir', save_dir)
+        setattr(self, '_emoji_list_version_fp', emoji_list_version_fp)
         emoji_list = None
         if try_load_first:
             emoji_list, version_date = self._load_emoji_list( version = version, verbose = verbose )
@@ -118,7 +128,10 @@ class PyMoji(object):
         setattr(self, '_emoji_regex', emoji_regex)
 
     def update_emoji_list( self, save_on_update = True ):
-        self._attr_setter( try_load_first = False, save_on_update = save_on_update )
+        self._attr_setter( try_load_first = False,
+                           save_on_update = save_on_update,
+                           save_dir = self.save_dir,
+                           emoji_list_version_fp = self.emoji_list_version_fp )
 
     @property
     def emoji_list( self ):
@@ -131,3 +144,19 @@ class PyMoji(object):
     @property
     def version_date( self ):
         return self._version_date
+
+    @property
+    def save_dir( self ):
+        return self._save_dir
+
+    @save_dir.setter
+    def save_dir( self, save_dir ):
+        self._save_dir = save_dir
+
+    @property
+    def emoji_list_version_fp( self ):
+        return self._emoji_list_version_fp
+
+    @emoji_list_version_fp.setter
+    def emoji_list_version_fp( self, emoji_list_version_fp ):
+        self._emoji_list_version_fp = emoji_list_version_fp
