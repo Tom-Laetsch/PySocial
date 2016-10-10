@@ -16,15 +16,11 @@ class PyMoji(object):
                   version = -1,
                   verbose = True,
                   save_dir = join(dirname(__file__), '.pymoji_saved/'),
-                  emoji_list_version_fp = '.emoji_list_fps' ):
+                  saved_version_basename = '.emoji_list_fps' ):
 
-
-        self._attr_setter( try_load_first,
-                           save_on_update,
-                           version,
-                           verbose,
-                           save_dir,
-                           emoji_list_version_fp )
+        self.save_dir = save_dir
+        self.saved_version_basename = saved_version_basename
+        self._attr_setter( try_load_first, save_on_update, version, verbose )
 
     def _update_emoji_list( self, save_on_update = True ):
         emoji_url = 'http://unicode.org/emoji/charts/full-emoji-list.html'
@@ -55,7 +51,7 @@ class PyMoji(object):
                 with open(filepath, 'wb') as fout:
                     pickle.dump(obj = emoji_list, file = fout, protocol = 2)
                 if isfile(filepath):
-                    fsaved_names = join(self.save_dir, self.emoji_list_version_fp)
+                    fsaved_names = join(self.save_dir, self.saved_version_basename)
                     if isfile(fsaved_names):
                         #if this file already exists, add \n
                         with open(fsaved_names, 'a') as fsaved:
@@ -71,7 +67,7 @@ class PyMoji(object):
     def _load_emoji_list( self, version = -1, verbose = False ):
         # version is a negative int with -1 most recent, and -n the nth previously saved version.
         filenames = []
-        fsaved_names = join(self.save_dir, self.emoji_list_version_fp)
+        fsaved_names = join(self.save_dir, self.saved_version_basename)
         try:
             with open(fsaved_names, 'r') as fsaved:
                 for name in fsaved:
@@ -109,11 +105,7 @@ class PyMoji(object):
                      try_load_first = True,
                      save_on_update = True,
                      version = -1,
-                     verbose = True,
-                     save_dir = join(dirname(__file__), '.pymoji_saved/'),
-                     emoji_list_version_fp = '.emoji_list_fps' ):
-        setattr(self, '_save_dir', save_dir)
-        setattr(self, '_emoji_list_version_fp', emoji_list_version_fp)
+                     verbose = True ):
         emoji_list = None
         if try_load_first:
             emoji_list, version_date = self._load_emoji_list( version = version, verbose = verbose )
@@ -128,10 +120,7 @@ class PyMoji(object):
         setattr(self, '_emoji_regex', emoji_regex)
 
     def update_emoji_list( self, save_on_update = True ):
-        self._attr_setter( try_load_first = False,
-                           save_on_update = save_on_update,
-                           save_dir = self.save_dir,
-                           emoji_list_version_fp = self.emoji_list_version_fp )
+        self._attr_setter( try_load_first = False, save_on_update = save_on_update )
 
     @property
     def emoji_list( self ):
@@ -154,9 +143,26 @@ class PyMoji(object):
         self._save_dir = save_dir
 
     @property
-    def emoji_list_version_fp( self ):
+    def saved_version_basename( self ):
         return self._emoji_list_version_fp
 
-    @emoji_list_version_fp.setter
-    def emoji_list_version_fp( self, emoji_list_version_fp ):
-        self._emoji_list_version_fp = emoji_list_version_fp
+    @saved_version_basename.setter
+    def saved_version_basename( self, saved_version_basename ):
+        self._emoji_list_version_fp = saved_version_basename
+
+    @property
+    def saved_version_fp( self ):
+        return join(self.save_dir, self.saved_version_basename)
+
+    @saved_version_fp.setter
+    def saved_version_fp( self, value ):
+        print("""
+ERROR: PATH NOT CHANGED.
+
+NOTE: Attribute saved_version_fp is only for exploratory convenience.
+      saved_version_fp = join(save_dir, saved_version_basename)
+
+To change the filepath for the stored emoji_list versions, you must
+change attributes save_dir to the directory you wish to save the file
+to, and saved_version_basename to the filename you wish.
+              """)
