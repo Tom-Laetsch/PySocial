@@ -149,20 +149,3 @@ class PyMoji(object):
     @saved_version_basename.setter
     def saved_version_basename( self, saved_version_basename ):
         self._emoji_list_version_fp = saved_version_basename
-
-    @property
-    def saved_version_fp( self ):
-        return join(self.save_dir, self.saved_version_basename)
-
-    @saved_version_fp.setter
-    def saved_version_fp( self, value ):
-        print("""
-ERROR: PATH NOT CHANGED.
-
-NOTE: Attribute saved_version_fp is only for exploratory convenience.
-      saved_version_fp = join(save_dir, saved_version_basename)
-
-To change the filepath for the stored emoji_list versions, you must
-change attributes save_dir to the directory you wish to save the file
-to, and saved_version_basename to the filename you wish.
-              """)
