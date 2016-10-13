@@ -1,11 +1,10 @@
-from __future__ import print_function, division
+from __future__ import print_function, division, absolute_import
 import numpy as np
 import pandas as pd
 import re
 from .TweetTokenizer2 import TweetTokenizer
-from ..PyMoji import PyMoji
+from PySocial import EMOJI_RE
 
-emoji_regex = PyMoji(verbose = False).emoji_regex
 
 class TwitterFrame( pd.DataFrame ):
     def __init__( self,  data=None, index=None, columns=None, dtype=None, copy=False, standardize = True ):
@@ -55,7 +54,7 @@ class TwitterFrame( pd.DataFrame ):
 
     def extract_emoji( self, verbose = True ):
         try:
-            return self.text.apply(lambda x: re.findall(emoji_regex, x))
+            return self.text.apply(lambda x: re.findall(EMOJI_RE, x))
         except Exception as e:
             if verbose: print( "Error %s encountered." % e )
             return None
@@ -111,7 +110,7 @@ class TwitterFrame( pd.DataFrame ):
 
 '''
     def extract_emoji( self ):
-        return self._twitter_frame.text.apply(lambda x: re.findall(emoji_regex, x))
+        return self._twitter_frame.text.apply(lambda x: re.findall(EMOJI_RE, x))
 
     def extract_screen_name( self ):
         return self._twitter_frame.user.apply(lambda x: x['screen_name'])

@@ -41,9 +41,9 @@ import re
 from nltk.compat import htmlentitydefs, int2byte, unichr
 
 ######## TOM ADDED CODE
-from PyMoji import PyMoji
-EMOJI_CLASS = PyMoji()
-EMOJI_RE = re.compile(EMOJI_CLASS.emoji_regex, re.UNICODE)
+#from PyMoji import PyMoji
+from PySocial import EMOJI_RE
+EMOJI_RE_COMPILED = re.compile(EMOJI_RE, re.UNICODE)
 #####
 
 ######################################################################
@@ -186,8 +186,8 @@ REGEXPS = (
 ######################################################################
 # This is the core tokenizing regex:
 
-###### TOM ADDED CDOE: EMOJI_CLASS.emoji_regex + "|" +
-WORD_RE = re.compile(EMOJI_CLASS.emoji_regex + "|" + r"""(%s)""" % "|".join(REGEXPS), re.VERBOSE | re.I
+###### TOM ADDED CDOE: EMOJI_RE + "|" +
+WORD_RE = re.compile(EMOJI_RE + "|" + r"""(%s)""" % "|".join(REGEXPS), re.VERBOSE | re.I
                      | re.UNICODE)
 ######
 
@@ -328,19 +328,19 @@ class TweetTokenizer:
         #words = WORD_RE.findall(safe_text) #TOM ADDED CODE: commented this on_timeout
         # TOM ADDED CODE
         if self.banish_emoji:
-            s_temp = EMOJI_RE.sub(" ", safe_text)
+            s_temp = EMOJI_RE_COMPILED.sub(" ", safe_text)
             word = WORD_RE.findall(safe_text)
         else:
             s_temp = safe_text
             words = []
-            search = EMOJI_RE.search(s_temp)
+            search = EMOJI_RE_COMPILED.search(s_temp)
             while search != None:
                 a = search.span(0)[0]
                 b = search.span(0)[1]
                 words += WORD_RE.findall(s_temp[:a])
                 words.append(s_temp[a:b])
                 s_temp = s_temp[b:]
-                search = EMOJI_RE.search(s_temp)
+                search = EMOJI_RE_COMPILED.search(s_temp)
             if len(s_temp) > 0:
                 words += WORD_RE.findall(s_temp)
 

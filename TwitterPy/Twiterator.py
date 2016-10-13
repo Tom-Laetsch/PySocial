@@ -2,7 +2,9 @@ from __future__ import print_function
 from os import listdir
 from os.path import isfile, isdir, join, basename, dirname
 from gensim.models.doc2vec import TaggedDocument
-from .TweetTokenizer2 import TweetTokenizer
+from PySocial import TweetTokenizer
+#from PySocial import 
+#from .TweetTokenizer2 import TweetTokenizer
 from .TwitterTools import tweet_lon_lat
 from .IO_Helpers import files_from_list, IOError_message
 import json
