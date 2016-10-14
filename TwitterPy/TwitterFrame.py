@@ -5,7 +5,8 @@ import re
 from .TweetTokenizer2 import TweetTokenizer
 from PySocial import EMOJI_RE
 
-#short list of columns that might be useful
+EMOJI_COMPILED_RE = re.compile(EMOJI_RE, re.UNICODE)
+#short list of frequently used columns
 keeps = [
          'screen_name',
          'tokenized_text',
@@ -13,24 +14,49 @@ keeps = [
          'mentions',
          'emojis',
          'user_n',
+         'location_id',
+         'id_str',
+         'coordinates',
          'created_at',
          'text',
+         'entities',
          'user',
-         'coordinates'
+         'quoted_status',
+         'in_reply_to_id_str',
+         'favorite_count',
+         'retweet_count',
+         'place'
         ]
-#drop unwanted columns
+#lesser used columns
 drops = [
+         '_id', #use id_str
+         'contributors',
+         'display_text_range',
+         'extended_entities',
+         'extended_tweet',
+         'favorited',
+         'filter_level',
          'geo', #deprecated
          'id', #use id_str
-         'quoted_status_id', #use quoted_status
-         'quoted_status_id_str' #use quoted_status
+         'in_reply_to_status_id', #use *_id_str
+         'in_reply_to_user_id',  #use *_id_str
+         'is_quote_status',
+         'lang',
+         'possibly_sensitive',
+         'quoted_status_id',
+         'quoted_status_id_str',
+         'retweeted',
+         'scopes',
+         'source',
+         'timestamp_ms',
+         'truncated'
         ]
 
 class TwitterFrame( pd.DataFrame ):
     def __init__( self,
                   data=None, index=None, columns=None, dtype=None, copy=False, #for DataFrame
-                  keep_columns = keeps,
-                  remove_columns = [],
+                  keep_columns = [],
+                  remove_columns = drops,
                   standardize = False ):
         super(self.__class__,self).__init__(data=data,
                                             index=index,
@@ -45,6 +71,18 @@ class TwitterFrame( pd.DataFrame ):
                           remove_columns = [],
                           verbose = True
                         ):
+
+        #deal with un/wanted columns (SAFER TO DROP THAN KEEP)
+        if len(keep_columns) > 0:
+            to_drop = [ key for key in self.columns.values if key not in keep_columns ]
+            if len(to_drop) == len(self.columns.values):
+                to_drop = []
+        else:
+            to_drop = [key for key in remove_columns if key in self.columns.values]
+        if len(to_drop) > 0:
+            if verbose: print("Dropping unwanted columns...")
+            self.__init__( self.drop(to_drop, axis = 1) )
+
         #create tokenized text and emoji list columns
         if 'text' in self.columns.values:
             if 'tokenized_text' not in self.columns.values:
@@ -67,18 +105,6 @@ class TwitterFrame( pd.DataFrame ):
             if 'screen_name' not in self.columns.values:
                 if verbose: print("Extracting screen_name...")
                 self['screen_name'] = self.extract_screen_name( verbose = False )
-
-        if len(keep_columns) > 0:
-            to_drop = [ key for key in self.columns.values if key not in keep_columns ]
-            if len(to_drop) == len(self.columns.values):
-                to_drop = []
-        else:
-            to_drop = [key for key in remove_columns if key in self.columns.values]
-
-        if len(to_drop) > 0:
-            if verbose: print("Dropping unwanted columns...")
-            self.__init__( self.drop(to_drop, axis = 1) )
-
         if verbose: print("Standardization complete.")
 
     def from_pickle( self, pickle_file, standardize = True ):
@@ -89,7 +115,10 @@ class TwitterFrame( pd.DataFrame ):
     def from_json( self, json_file, standardize = True ):
         with open(json_file, 'r') as fin:
             data = fin.readlines()
-        self.__init__( pd.read_json( '[' + ','.join(x.strip() for x in data) + ']' ) )
+        self.__init__(
+                       pd.read_json( '[' + ','.join(x.strip() for x in data) + ']' ),
+                       standardize = standardize
+                     )
 
     def tokenize_text( self, verbose = True, **kwargs ):
         tknzr = TweetTokenizer(**kwargs).tokenize
@@ -109,7 +138,7 @@ class TwitterFrame( pd.DataFrame ):
 
     def extract_emojis( self, verbose = True ):
         try:
-            return self.text.apply(lambda x: tuple(re.findall(EMOJI_RE, x)))
+            return self.text.apply(lambda x: tuple(EMOJI_COMPILED_RE.findall(x)))
         except Exception as e:
             if verbose: print( "Error %s encountered." % e )
             return None
@@ -123,6 +152,16 @@ class TwitterFrame( pd.DataFrame ):
         def mentions_fn( entities ):
             return tuple([ x['screen_name'] for x in entities['user_mentions'] ])
         return self.entities.apply( lambda x: mentions_fn(x) )
+
+    def create_location_id( self, location_function, verbose = True ):
+        if 'coordinates' in self.columns.values:
+            def loc_fn( coords ):
+                lon, lat = coords['coordinates']
+                return location_function( lon, lat )
+            self['location_id'] = self.coordinates.apply( lambda x: loc_fn(x) )
+        else:
+            if verbose: print("No 'coordinates' column. Location ID not created.")
+            return False
 
     def order_by_screen_name( self, verbose = True ):
         if not 'screen_name' in self.columns.values:
@@ -164,17 +203,32 @@ class TwitterFrame( pd.DataFrame ):
         try:
             def time_fn( dt_object ):
                 if time_delta == 'day':
-                    return dt_object.day
+                    return '%s-%s-%s' % (dt_object.month,
+                                         dt_object.day,
+                                         dt_object.year)
                 elif time_delta == 'hour':
-                    return dt_object.hour
+                    return '%s-%s-%s %s:00:00' % (dt_object.month,
+                                                  dt_object.day,
+                                                  dt_object.year,
+                                                  dt_object.hour)
                 elif time_delta == 'minute':
-                    return dt_object.minute
+                    return '%s-%s-%s %s:%s:00' % (dt_object.month,
+                                                  dt_object.day,
+                                                  dt_object.year,
+                                                  dt_object.hour,
+                                                  dt_object.minute)
                 elif time_delta == 'month':
-                    return dt_object.month
+                    return '%s-%s' % (dt_object.month,
+                                      dt_object.year)
                 elif time_delta == 'year':
-                    return dt_object.year
+                    return str(dt_object.year)
                 elif time_delta == 'second':
-                    return dt_object.second
+                    return '%s-%s-%s %s:%s:%s' % (dt_object.month,
+                                                  dt_object.day,
+                                                  dt_object.year,
+                                                  dt_object.hour,
+                                                  dt_object.minute,
+                                                  dt_object.second)
 
 
             if verbose: print("Grouping...")
@@ -191,79 +245,6 @@ class TwitterFrame( pd.DataFrame ):
 
             if verbose: print("Selecting %d random choice(s) from groups..." % num_allowed)
             return TwitterFrame( data = grp.apply( lambda x: sel_fn(x) ) )
-            #restrict screen_name allowances
-            #keep = dict(screen_name = [], keep = [])
-            #for name, g in grp:
-            #    glen = len(g)
-            #    i_star = np.random.choice(range(glen), num_allowed, replace=False)
-            #    for i in range(glen):
-            #        keep['screen_name'].append(name)
-            #        keep['keep'].append(i in i_star)
-            #first merge (temporary step: part 1 of 2 merges)
-            #self.__init__(self.merge( pd.DataFrame(keep), on='screen_name', how='outer', suffixes = ('','') ) )
         except Exception as e:
             print("Exception: %s" % e)
             return False
-
-
-'''
-    def extract_emojis( self ):
-        return self._twitter_frame.text.apply(lambda x: re.findall(EMOJI_RE, x))
-
-    def extract_screen_name( self ):
-        return self._twitter_frame.user.apply(lambda x: x['screen_name'])
-
-    def order_by_screen_name( self ):
-        if not 'screen_name' in self._twitter_frame.columns.values:
-            self._twitter_frame['screen_name'] = self.extract_screen_name()
-        grp = self._twitter_frame.groupby( "screen_name", as_index = False )
-        return pd.merge(self._twitter_frame, grp['user'].agg(len),
-                        on='screen_name',
-                        how='outer',
-                        suffixes=('', '_n')).sort_values(by = ['user_n', 'screen_name'],
-                                                         ascending=[0,1]).reset_index()
-
-    def restrict_within_time( self, num_allowed = 1, time_delta = 'day' ):
-        if not 'screen_name' in self._twitter_frame.columns.values:
-            self._twitter_frame['screen_name'] = self.extract_screen_name()
-        grp = self._twitter_frame.groupby( 'screen_name', as_index = False )
-        #restrict screen_name allowances
-        keep = dict(screen_name = [], keep = [])
-        for name, g in grp:
-            glen = len(g)
-            i_star = np.random.choice(range(glen), num_allowed, replace=False)
-            for i in range(glen):
-                keep['screen_name'].append(name)
-                keep['keep'].append(i in i_star)
-        #first merge (temporary step: part 1 of 2 merges)
-        return pd.merge( pd.DataFrame(keep), self._twitter_frame,
-                         on='screen_name',
-                         how='outer',
-                         suffixes = ('','') )
-
-    @property
-    def twitter_frame( self ):
-        return self._twitter_frame
-
-    def standardize( self ):
-        #drop unwanted columns
-        try:
-            self._twitter_frame = self._twitter_frame.drop( [
-                                                                'geo', #deprecated
-                                                                'id', #only keep id_str
-                                                                'quoted_status_id', #contained in quoted_status
-                                                                'quoted_status_id_str' #contained in quoted_status
-                                                             ],
-                                                             axis = 1)
-        except ValueError:
-            #columns are already missing
-            pass
-        #tokenize text and add column
-        self._twitter_frame['tokenized_text'] = self.tokenize_text()
-        #extract emoji present
-        self._twitter_frame['emoji'] = self.extract_emojis()
-        #create screen_name column
-        self._twitter_frame['screen_name'] = self.extract_screen_name()
-        #group and order the data by screen name, adds column user_n with number of posts by user
-        self._twitter_frame = self.order_by_screen_name()
-'''
