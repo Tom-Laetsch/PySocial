@@ -66,6 +66,13 @@ class TwitterFrame( pd.DataFrame ):
         if standardize:
             self.standardize_self( keep_columns, remove_columns )
 
+    def __getitem__(self, key):
+        ret = super(self.__class__, self).__getitem__( key )
+        if isinstance(ret, pd.core.frame.DataFrame):
+            return TwitterFrame( ret )
+        else:
+            return ret
+
     def standardize_self( self,
                           keep_columns = keeps,
                           remove_columns = [],
@@ -112,13 +119,37 @@ class TwitterFrame( pd.DataFrame ):
         self.__init__( pd.read_pickle(pickle_file), standardize = standardize )
         #self.standardize()
 
-    def from_json( self, json_file, standardize = True ):
+    def read_pickle( self, pickle_file, standardize = True ):
+        #self._twitter_frame = pd.read_pickle( pickle_file )
+        return TwitterFrame( pd.read_pickle(pickle_file), standardize = standardize )
+        #self.standardize()
+
+    def from_twitter_json( self, json_file, standardize = True ):
         with open(json_file, 'r') as fin:
             data = fin.readlines()
         self.__init__(
                        pd.read_json( '[' + ','.join(x.strip() for x in data) + ']' ),
                        standardize = standardize
                      )
+
+    def read_twitter_json( self, json_file, standardize = True ):
+        with open(json_file, 'r') as fin:
+            data = fin.readlines()
+        return TwitterFrame(
+                               pd.read_json( '[' + ','.join(x.strip() for x in data) + ']' ),
+                               standardize = standardize
+                           )
+
+    def to_twitter_json( self, fpath, start_new = True ):
+        try:
+            if start_new:
+                with open( fpath, 'w' ) as fout: pass
+            with open( fpath, 'a' ) as fout:
+                for i in range( len(self) ):
+                    self.loc[i].to_json( fout )
+                    fout.write("\n")
+        except Exception as e:
+            print("Exception encountered: %s" % e)
 
     def tokenize_text( self, verbose = True, **kwargs ):
         tknzr = TweetTokenizer(**kwargs).tokenize
@@ -153,11 +184,11 @@ class TwitterFrame( pd.DataFrame ):
             return tuple([ x['screen_name'] for x in entities['user_mentions'] ])
         return self.entities.apply( lambda x: mentions_fn(x) )
 
-    def create_location_id( self, location_function, verbose = True ):
+    def create_location_id( self, location_function, verbose = True, *args, **kwargs ):
         if 'coordinates' in self.columns.values:
             def loc_fn( coords ):
                 lon, lat = coords['coordinates']
-                return location_function( lon, lat )
+                return location_function( lon, lat, *args, *kwargs )
             self['location_id'] = self.coordinates.apply( lambda x: loc_fn(x) )
         else:
             if verbose: print("No 'coordinates' column. Location ID not created.")
@@ -248,3 +279,11 @@ class TwitterFrame( pd.DataFrame ):
         except Exception as e:
             print("Exception: %s" % e)
             return False
+
+    def concat_self( self, tf, tf_file_type = None, **kwargs ):
+        if tf_file_type is None:
+            self.__init__( pd.concat([self, tf], **kwargs) )
+        elif tf_file_type == 'pickle':
+            self.__init__( pd.concat([self, self.read_pickle(tf)], **kwargs) )
+        elif tf_file_type == 'json':
+            self.__init__( pd.concat([self, self.read_json(tf)], **kwargs) )
