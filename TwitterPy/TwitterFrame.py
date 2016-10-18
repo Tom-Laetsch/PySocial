@@ -49,7 +49,8 @@ drops = [
          'scopes',
          'source',
          'timestamp_ms',
-         'truncated'
+         'truncated',
+         'withheld_in_countries'
         ]
 
 class TwitterFrame( pd.DataFrame ):
@@ -194,7 +195,7 @@ class TwitterFrame( pd.DataFrame ):
             if verbose: print("No 'coordinates' column. Location ID not created.")
             return False
 
-    def order_by_screen_name( self, verbose = True ):
+    def order_self_by_screen_name( self, verbose = True ):
         if not 'screen_name' in self.columns.values:
             self['screen_name'] = self.extract_screen_name()
         try:
