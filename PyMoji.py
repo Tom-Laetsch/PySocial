@@ -1,4 +1,4 @@
-from __future__ import print_function
+from __future__ import print_function, unicode_literals
 from bs4 import BeautifulSoup
 import requests
 try:
@@ -8,6 +8,18 @@ except:
 from datetime import datetime
 from os.path import isfile, join, dirname
 import re
+
+__all__ = ['SKINTONES_LIST',
+           'SKINTONES_RE',
+           'PyMoji']
+
+SKINTONES_LIST = [u'\U0001f3fb',
+                  u'\U0001f3fc',
+                  u'\U0001f3fd',
+                  u'\U0001f3fe',
+                  u'\U0001f3ff']
+SKINTONES_RE = r'[\U0001f3fb-\U0001f3ff]'
+
 
 class PyMoji(object):
     def __init__( self,

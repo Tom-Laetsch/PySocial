@@ -2,7 +2,7 @@ from __future__ import absolute_import, print_function, division
 from os import listdir
 from os.path import isfile, isdir, join, basename, dirname
 import json, re, pprint
-from PySocial import TweetTokenizer, EMOJI_RE, EMOJI_LIST
+from PySocial import TweetTokenizer, EMOJI_RE, EMOJI_LIST, SKINTONES_RE 
 
 pp = pprint.PrettyPrinter(indent = 4)
 
@@ -76,6 +76,18 @@ def placeInCountry( tweet, country_code = 'US', verbose = False):
             print("")
         return False
 
+def symbsInText( tweet, symbs_re, verbose = False ):
+        try:
+            return len( re.findall(symbs_re, tweet['text']) ) > 0
+        except Exception as e:
+            if verbose:
+                print("Exception: %s" % e)
+                print("----------------")
+                print("In tweet: %s" % tweet)
+                print("----------------")
+                print("")
+            return False
+
 class JSONTwiterator( object ):
     def __init__( self, tjsonfiles, criteria = ['placeInCountry'], verbose = False ):
         self._json_line_iterator = JSON_Line_Iterator( tjsonfiles, verbose )
@@ -97,6 +109,12 @@ class JSONTwiterator( object ):
                         'placeInCountry': {'function': placeInCountry,
                                            'kwargs': {
                                                       'country_code': 'US',
+                                                      'verbose': False
+                                                     }
+                                          },
+                        'symbsInText': {'function': symbsInText,
+                                           'kwargs': {
+                                                      'symbs_re': SKINTONES_RE,
                                                       'verbose': False
                                                      }
                                           }
