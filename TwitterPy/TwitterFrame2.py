@@ -75,8 +75,9 @@ def to_twitter_json( twitframe, output_path, start_new = True ):
     except Exception as e:
         print("Exception encountered: %s" % e)
 
-def tokenize_text( twitframe, verbose = True, **kwargs ):
-    tknzr = TweetTokenizer(**kwargs).tokenize
+def tokenize_text( twitframe, tknzr = None, verbose = True, **kwargs ):
+    if tknzr is None:
+        tknzr = TweetTokenizer(**kwargs).tokenize
     #return twitframe._twitter_frame.text.apply( lambda x: tknzr(x) )
     try:
         return twitframe.text.apply( lambda x: tuple(tknzr(x)) )
@@ -91,9 +92,9 @@ def extract_screen_name( twitframe, verbose = True ):
         if verbose: print( "Error %s encountered." % e )
         return None
 
-def extract_emojis( twitframe, verbose = True ):
+def extract_emojis( twitframe, cmpld_regex = EMOJI_COMPILED_RE, verbose = True ):
     try:
-        return twitframe.text.apply(lambda x: tuple(EMOJI_COMPILED_RE.findall(x)))
+        return twitframe.text.apply(lambda x: tuple(cmpld_regex.findall(x)))
     except Exception as e:
         if verbose: print( "Error %s encountered." % e )
         return None
