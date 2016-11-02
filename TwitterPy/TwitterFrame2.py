@@ -3,9 +3,10 @@ import numpy as np
 import pandas as pd
 import re
 from .TweetTokenizer2 import TweetTokenizer
-from PySocial import EMOJI_RE
+from PySocial import EMOJI_COMPILED_RE as _EMOJI_COMPILED_RE
 
-EMOJI_COMPILED_RE = re.compile(EMOJI_RE, re.UNICODE)
+_RE_TYPE = type(_EMOJI_COMPILED_RE)
+_DEFAULT_TKNZR = TweetTokenizer().tokenize
 #short list of frequently used columns
 keeps = [
          'screen_name',
@@ -75,12 +76,13 @@ def to_twitter_json( twitframe, output_path, start_new = True ):
     except Exception as e:
         print("Exception encountered: %s" % e)
 
-def tokenize_text( twitframe, tknzr = None, verbose = True, **kwargs ):
-    if tknzr is None:
-        tknzr = TweetTokenizer(**kwargs).tokenize
+def tokenize_tweet_text( twitframe,
+                         tknzr = _DEFAULT_TKNZR,
+                         verbose = True,
+                         **kwargs ):
     #return twitframe._twitter_frame.text.apply( lambda x: tknzr(x) )
     try:
-        return twitframe.text.apply( lambda x: tuple(tknzr(x)) )
+        return twitframe.text.apply( lambda x: tuple(tknzr(x, **kwargs)) )
     except Exception as e:
         if verbose: print( "Error %s encountered." % e )
         return None
@@ -92,9 +94,16 @@ def extract_screen_name( twitframe, verbose = True ):
         if verbose: print( "Error %s encountered." % e )
         return None
 
-def extract_emojis( twitframe, cmpld_regex = EMOJI_COMPILED_RE, verbose = True ):
+def extract_from_text( twitframe, regex = _EMOJI_COMPILED_RE, verbose = True ):
+    """
+    Extract regex from tweet text by passing either compiled regular expression
+    or string pattern to be matched. Defaults to emoji extraction.
+    """
     try:
-        return twitframe.text.apply(lambda x: tuple(cmpld_regex.findall(x)))
+        if isinstance(regex, _RE_TYPE):
+            return twitframe.text.apply(lambda x: tuple(regex.findall(x)))
+        else:
+            return twitframe.text.apply(lambda x: tuple(re.findall(regex, x)))
     except Exception as e:
         if verbose: print( "Error %s encountered." % e )
         return None
@@ -109,7 +118,7 @@ def extract_mentions( twitframe, verbose = True ):
         return tuple([ x['screen_name'] for x in entities['user_mentions'] ])
     return twitframe.entities.apply( lambda x: mentions_fn(x) )
 
-def order_twitframe_by_screen_name( twitframe, verbose = True ):
+def order_by_screen_name( twitframe, verbose = True ):
     if not 'screen_name' in twitframe.columns.values:
         twitframe['screen_name'] = extract_screen_name( twitframe, verbose = verbose )
     try:
@@ -126,6 +135,7 @@ def order_twitframe_by_screen_name( twitframe, verbose = True ):
 def standardize_twitframe( twitframe,
                            keep_columns = keeps,
                            remove_columns = [],
+                           reset_index = True,
                            verbose = True
                          ):
 
@@ -142,6 +152,7 @@ def standardize_twitframe( twitframe,
     #remove repeated rows (uid in id_str)
     twitframe = twitframe.drop_duplicates('id_str')
     #create tokenized text and emoji list columns
+    """
     if 'text' in twitframe.columns.values:
         if 'tokenized_text' not in twitframe.columns.values:
             if verbose: print("Creating tokenized_text...")
@@ -158,16 +169,19 @@ def standardize_twitframe( twitframe,
         if 'mentions' not in twitframe.columns.values:
             if verbose: print("Extracting user_mentions, saving as 'mentions'...")
             twitframe['mentions'] = extract_mentions( twitframe, verbose = False )
+    """
     #create screen_name column
     if 'user' in twitframe.columns.values:
         if 'screen_name' not in twitframe.columns.values:
             if verbose: print("Extracting screen_name...")
             twitframe['screen_name'] = extract_screen_name( twitframe, verbose = False )
-    if verbose: print("Standardization complete.")
+    """
     #order by screen_name users
-    twitframe = order_twitframe_by_screen_name( twitframe, verbose = verbose )
-    #return the adjusted TwitterFrame
-    return twitframe.reset_index()
+    twitframe = order_by_screen_name( twitframe, verbose = verbose )
+    """
+    #return the adjusted TwitterFrame resetting index
+    if verbose: print("Standardization complete.")
+    return twitframe.reset_index() if reset_index else twitframe
 
 def restrict_within_time( twitframe,
                           by = ['screen_name'],
@@ -243,7 +257,7 @@ def restrict_within_time( twitframe,
     finally:
         return twitframe
 
-
+"""
 class TwitterFrame( pd.DataFrame ):
     def __init__( self,
                   data=None, index=None, columns=None, dtype=None, copy=False, #for DataFrame
@@ -361,7 +375,7 @@ class TwitterFrame( pd.DataFrame ):
 
     def extract_emojis( self, verbose = True ):
         try:
-            return self.text.apply(lambda x: tuple(EMOJI_COMPILED_RE.findall(x)))
+            return self.text.apply(lambda x: tuple(_EMOJI_COMPILED_RE.findall(x)))
         except Exception as e:
             if verbose: print( "Error %s encountered." % e )
             return None
@@ -479,3 +493,4 @@ class TwitterFrame( pd.DataFrame ):
             self.__init__( pd.concat([self, self.read_pickle(tf)], **kwargs) )
         elif tf_file_type == 'json':
             self.__init__( pd.concat([self, self.read_json(tf)], **kwargs) )
+"""

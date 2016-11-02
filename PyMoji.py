@@ -9,18 +9,6 @@ from datetime import datetime
 from os.path import isfile, join, dirname
 import re
 
-__all__ = ['SKINTONES_LIST',
-           'SKINTONES_RE',
-           'PyMoji']
-
-SKINTONES_LIST = [u'\U0001f3fb',
-                  u'\U0001f3fc',
-                  u'\U0001f3fd',
-                  u'\U0001f3fe',
-                  u'\U0001f3ff']
-SKINTONES_RE = r'[\U0001f3fb-\U0001f3ff]'
-
-
 class PyMoji(object):
     def __init__( self,
                   try_load_first = True,
@@ -161,3 +149,21 @@ class PyMoji(object):
     @saved_version_basename.setter
     def saved_version_basename( self, saved_version_basename ):
         self._emoji_list_version_fp = saved_version_basename
+
+EMOJI_CLASS = PyMoji()
+EMOJI_LIST = [ e[0] for e in EMOJI_CLASS.emoji_list ]
+EMOJI_SET = set(EMOJI_LIST)
+EMOJI_RE = EMOJI_CLASS.emoji_regex
+EMOJI_COMPILED_RE = re.compile(EMOJI_RE)
+SKINTONES_LIST = [u'\U0001f3fb',
+                  u'\U0001f3fc',
+                  u'\U0001f3fd',
+                  u'\U0001f3fe',
+                  u'\U0001f3ff']
+SKINTONES_SET = set(SKINTONES_LIST)
+SKINTONES_RE = r'[\U0001f3fb-\U0001f3ff]'
+SKINTONES_COMPILED_RE = re.compile(SKINTONES_RE)
+
+
+__all__ = ["EMOJI_CLASS","EMOJI_LIST", "EMOJI_SET", "EMOJI_RE", "EMOJI_COMPILED_RE",
+           "SKINTONES_LIST", "SKINTONES_SET", "SKINTONES_RE", "SKINTONES_COMPILED_RE"]
