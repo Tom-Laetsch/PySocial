@@ -9,6 +9,7 @@ from datetime import datetime
 from os.path import isfile, join, dirname
 import re
 
+
 class PyMoji(object):
     def __init__( self,
                   try_load_first = True,
@@ -164,6 +165,14 @@ SKINTONES_SET = set(SKINTONES_LIST)
 SKINTONES_RE = r'[\U0001f3fb-\U0001f3ff]'
 SKINTONES_COMPILED_RE = re.compile(SKINTONES_RE)
 
-
-__all__ = ["EMOJI_CLASS","EMOJI_LIST", "EMOJI_SET", "EMOJI_RE", "EMOJI_COMPILED_RE",
-           "SKINTONES_LIST", "SKINTONES_SET", "SKINTONES_RE", "SKINTONES_COMPILED_RE"]
+__all__ = [
+            "EMOJI_CLASS",
+            "EMOJI_LIST",
+            "EMOJI_SET",
+            "EMOJI_RE",
+            "EMOJI_COMPILED_RE",
+            "SKINTONES_LIST",
+            "SKINTONES_SET",
+            "SKINTONES_RE",
+            "SKINTONES_COMPILED_RE"
+          ]

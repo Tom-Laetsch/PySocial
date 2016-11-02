@@ -1,15 +1,4 @@
 from __future__ import absolute_import
-import re
-
-__all__ = [
-           'EMOJI_CLASS',
-           'EMOJI_RE',
-           'EMOJI_LIST',
-           'EMOJI_SET',
-           'SKINTONES_LIST',
-           'SKINTONES_RE',
-           'SKINTONES_SET'
-          ]
 
 #EMOJI GLOBALS
 """
