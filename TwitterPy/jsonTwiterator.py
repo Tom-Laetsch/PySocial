@@ -1,14 +1,10 @@
 from __future__ import absolute_import, print_function, division
 from os import listdir
 from os.path import isfile, isdir, join, basename, dirname
-import json, re, pprint
+import json, re
 
 from .TweetTokenizer2 import *
 from ..PyMoji import *
-
-#from PySocial import TweetTokenizer, EMOJI_RE, EMOJI_LIST, SKINTONES_RE
-
-pp = pprint.PrettyPrinter(indent = 4)
 
 #helper function: makes a list of filesnames from passed argument
 def files_from_list(files_path_dir):
