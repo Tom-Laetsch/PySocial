@@ -75,7 +75,7 @@ class TwitterFrame( pd.DataFrame ):
             return ret
 
     def standardize_self( self,
-                          keep_columns = keeps,
+                          keep_columns = [],
                           remove_columns = [],
                           verbose = True
                         ):

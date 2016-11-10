@@ -9,6 +9,16 @@ from datetime import datetime
 from os.path import isfile, join, dirname
 import re
 
+def emoji_regex_maker( list_of_emojis ):
+    emojis = sorted( list_of_emojis, key = lambda x: len(x))
+    emoji_re = ''
+    for e in list_of_emojis:
+        emoji_re += '(?:' + e + ')|'
+    #asterisks cause trouble
+    emoji_re = re.sub(r'\*', r'\*', emoji_re)
+    #remove trailing or |
+    return emoji_re[:-1]
+
 
 class PyMoji(object):
     def __init__( self,
@@ -94,13 +104,7 @@ class PyMoji(object):
 
 
     def _emoji_regex_maker( self ):
-        emoji_re = ''
-        for e in self._emoji_list:
-            emoji_re += '(?:' + e[0] + ')|'
-        #asterisks cause trouble
-        emoji_re = re.sub(r'\*', r'\*', emoji_re)
-        #remove trailing or |
-        return emoji_re[:-1]
+        return emoji_regex_maker( [e[0] for e in self._emoji_list] )
 
     def _attr_setter( self,
                      try_load_first = True,
@@ -164,8 +168,13 @@ SKINTONES_LIST = [u'\U0001f3fb',
 SKINTONES_SET = set(SKINTONES_LIST)
 SKINTONES_RE = r'[\U0001f3fb-\U0001f3ff]'
 SKINTONES_COMPILED_RE = re.compile(SKINTONES_RE)
+SKINTONED_EMOJI_LIST = [ e for e in EMOJI_LIST if any(st in e for st in SKINTONES_LIST) ]
+SKINTONED_EMOJI_SET = set( SKINTONED_EMOJI_LIST )
+SKINTONED_EMOJI_RE = emoji_regex_maker( SKINTONED_EMOJI_LIST )
+SKINTONED_EMOJI_COMPILED_RE = re.compile( SKINTONED_EMOJI_RE )
 
 __all__ = [
+            "emoji_regex_maker",
             "EMOJI_CLASS",
             "EMOJI_LIST",
             "EMOJI_SET",
@@ -174,5 +183,8 @@ __all__ = [
             "SKINTONES_LIST",
             "SKINTONES_SET",
             "SKINTONES_RE",
-            "SKINTONES_COMPILED_RE"
+            "SKINTONES_COMPILED_RE",
+            "SKINTONED_EMOJI_LIST",
+            "SKINTONED_EMOJI_RE",
+            "SKINTONED_EMOJI_COMPILED_RE"
           ]

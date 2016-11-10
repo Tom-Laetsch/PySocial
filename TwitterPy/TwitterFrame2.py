@@ -133,8 +133,8 @@ def order_by_screen_name( twitframe, verbose = True ):
         return twitframe
 
 def standardize_twitframe( twitframe,
-                           keep_columns = keeps,
-                           remove_columns = [],
+                           keep_columns = [],
+                           remove_columns = drops,
                            reset_index = True,
                            verbose = True
                          ):
