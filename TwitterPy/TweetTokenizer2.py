@@ -42,8 +42,7 @@ from nltk.compat import htmlentitydefs, int2byte, unichr
 
 ######## TOM ADDED CODE
 #from PyMoji import PyMoji
-from PySocial import EMOJI_RE
-EMOJI_RE_COMPILED = re.compile(EMOJI_RE, re.UNICODE)
+from PySocial import EMOJI_RE, EMOJI_COMPILED_RE
 #####
 
 ######################################################################
@@ -328,19 +327,19 @@ class TweetTokenizer:
         #words = WORD_RE.findall(safe_text) #TOM ADDED CODE: commented this on_timeout
         # TOM ADDED CODE
         if self.banish_emoji:
-            s_temp = EMOJI_RE_COMPILED.sub(" ", safe_text)
+            s_temp = EMOJI_COMPILED_RE.sub(" ", safe_text)
             word = WORD_RE.findall(safe_text)
         else:
             s_temp = safe_text
             words = []
-            search = EMOJI_RE_COMPILED.search(s_temp)
+            search = EMOJI_COMPILED_RE.search(s_temp)
             while search != None:
                 a = search.span(0)[0]
                 b = search.span(0)[1]
                 words += WORD_RE.findall(s_temp[:a])
                 words.append(s_temp[a:b])
                 s_temp = s_temp[b:]
-                search = EMOJI_RE_COMPILED.search(s_temp)
+                search = EMOJI_COMPILED_RE.search(s_temp)
             if len(s_temp) > 0:
                 words += WORD_RE.findall(s_temp)
 
@@ -382,3 +381,7 @@ def casual_tokenize(text, preserve_case=True, reduce_len=False, strip_handles=Fa
                           strip_handles=strip_handles).tokenize(text)
 
 ###############################################################################
+
+__all__ = [
+            "TweetTokenizer"
+          ]

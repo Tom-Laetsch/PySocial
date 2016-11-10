@@ -155,7 +155,7 @@ class PyMoji(object):
     def saved_version_basename( self, saved_version_basename ):
         self._emoji_list_version_fp = saved_version_basename
 
-EMOJI_CLASS = PyMoji()
+EMOJI_CLASS = PyMoji( verbose = False )
 EMOJI_LIST = [ e[0] for e in EMOJI_CLASS.emoji_list ]
 EMOJI_SET = set(EMOJI_LIST)
 EMOJI_RE = EMOJI_CLASS.emoji_regex
