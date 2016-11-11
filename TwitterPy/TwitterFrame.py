@@ -3,8 +3,9 @@ import numpy as np
 import pandas as pd
 import re
 
-from .TweetTokenizer2 import *
-from ..PyMoji import *
+from .TwitterExtras import adjTweetCoords
+from .TweetTokenizer2 import TweetTokenizer
+from ..PyMoji import EMOJI_COMPILED_RE
 
 _RE_TYPE = type(EMOJI_COMPILED_RE)
 _DEFAULT_TKNZR = TweetTokenizer().tokenize
@@ -122,6 +123,9 @@ def extract_mentions( twitframe, verbose = True ):
         return tuple([ x['screen_name'] for x in entities['user_mentions'] ])
     return twitframe.entities.apply( lambda x: mentions_fn(x) )
 
+def extract_adjusted_coordinates( twitframe, verbose = True ):
+    return twitframe[['coordinates','place']].apply( lambda x: adjTweetCoords(x), axis = 1 )
+
 def order_by_screen_name( twitframe, verbose = True ):
     if not 'screen_name' in twitframe.columns.values:
         twitframe['screen_name'] = extract_screen_name( twitframe, verbose = verbose )
@@ -231,8 +235,7 @@ def restrict_within_time( twitframe,
 
         def sel_fn( g ):
             np.random.seed( seed )
-            return g.iloc[ np.random.choice( range(0,len(g)),
-                                             num_allowed, replace=False ), : ]
+            return g.iloc[ np.random.choice( range(len(g)), num_allowed, replace=False ), : ]
 
         if verbose: print("Selecting %d random choice(s) from groups..." % num_allowed)
         twitframe = grp.apply( lambda x: sel_fn(x) )
@@ -242,17 +245,17 @@ def restrict_within_time( twitframe,
     finally:
         return twitframe
 
-__all__ = [
-            "from_twitter_json",
-            "to_twitter_json",
-            "tokenize_tweet_text",
-            "extract_screen_name",
-            "extract_emojis",
-            "extract_mentions",
-            "extract_hashtags",
-            "extract_from_text",
-            "extract_emojis",
-            "order_by_screen_name",
-            "standardize_twitframe",
-            "restrict_within_time"
-          ]
+#__all__ = [
+#            "from_twitter_json",
+#            "to_twitter_json",
+#            "tokenize_tweet_text",
+#            "extract_screen_name",
+#            "extract_emojis",
+#            "extract_mentions",
+#            "extract_hashtags",
+#            "extract_from_text",
+#            "extract_emojis",
+#            "order_by_screen_name",
+#            "standardize_twitframe",
+#            "restrict_within_time"
+#          ]

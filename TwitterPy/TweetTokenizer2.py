@@ -36,13 +36,13 @@ domains and tasks. The basic logic is this:
 
 ######################################################################
 
-from __future__ import unicode_literals
+from __future__ import absolute_import, unicode_literals
 import re
 from nltk.compat import htmlentitydefs, int2byte, unichr
 
 ######## TOM ADDED CODE
 #from PyMoji import PyMoji
-from PySocial import EMOJI_RE, EMOJI_COMPILED_RE
+from ..PyMoji import EMOJI_RE, EMOJI_COMPILED_RE
 #####
 
 ######################################################################

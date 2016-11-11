@@ -1,10 +1,11 @@
 from __future__ import absolute_import, print_function, division
 from os import listdir
 from os.path import isfile, isdir, join, basename, dirname
-import json, re
+import json
 
-from .TweetTokenizer2 import *
-from ..PyMoji import *
+from .TwitterExtras import adjTweetCoords
+from .TweetTokenizer2 import TweetTokenizer
+from ..PyMoji import EMOJI_COMPILED_RE
 
 #helper function: makes a list of filesnames from passed argument
 def files_from_list(files_path_dir):
@@ -56,6 +57,7 @@ class dictTwiterator( object ):
             tweet_dict['emojis'] = tuple( EMOJI_COMPILED_RE.findall( tweet['text'] ) )
             tweet_dict['hashtags'] = tuple( tweet['entities']['hashtags'] )
             tweet_dict['mentions'] = tuple( tweet['entities']['user_mentions'] )
+            tweet_dict['adjusted_coordinates'] = adjTweetCoords( tweet )
             for key in self.drops:
                 tweet_dict.pop( key, None )
             return tweet_dict
