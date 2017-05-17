@@ -102,6 +102,7 @@ class textTwiterator( object ):
                 with open(f, 'r') as fin:
                     for line in fin:
                         try:
+                            tweet = json.loads(line)
                             yield tweet['text']
                         except Exception as e:
                             if self.verbose:
