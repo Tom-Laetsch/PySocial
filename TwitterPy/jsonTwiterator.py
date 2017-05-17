@@ -8,10 +8,10 @@ from .TweetTokenizer2 import TweetTokenizer
 from ..PyMoji import EMOJI_COMPILED_RE
 
 #helper function: makes a list of filesnames from passed argument
-def files_from_list(files_path_dir):
+def json_files_from_list(files_path_dir):
     files = None
     if type(files_path_dir) == list:
-        files = [f for f in files_path_dir if isfile(f)]
+        files = [f for f in files_path_dir if isfile(f) and 'json' in f]
     elif type(files_path_dir) == str:
         if isdir(files_path_dir):
             files = [join(files_path_dir,f) for f in listdir(files_path_dir) if isfile(join(files_path_dir,f))]
@@ -46,7 +46,7 @@ drops =  [
 
 class dictTwiterator( object ):
     def __init__(self, json_files, drops = drops, verbose = True):
-        self.json_files = files_from_list(json_files)
+        self.json_files = json_files_from_list(json_files)
         self.verbose = verbose
         self.drops = drops
 
@@ -93,7 +93,7 @@ class dictTwiterator( object ):
 
 class textTwiterator( object ):
     def __init__(self, json_files, verbose = True):
-        self.json_files = files_from_list(json_files)
+        self.json_files = json_files_from_list(json_files)
         self.verbose = verbose
 
     def __iter__( self ):
@@ -121,7 +121,7 @@ class textTwiterator( object ):
 
 class tokenizedTextTwiterator( object ):
     def __init__(self, json_files, tknzr = TweetTokenizer().tokenize, verbose = True):
-        self.json_files = files_from_list(json_files)
+        self.json_files = json_files_from_list(json_files)
         self.tokenizer = tknzr
         self.verbose = verbose
 
