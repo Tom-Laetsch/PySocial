@@ -2,6 +2,7 @@ from __future__ import print_function, absolute_import, division
 from datetime import datetime as dt
 from dateutil import parser
 import random
+import time
 import json
 
 #IO stuff
@@ -79,4 +80,9 @@ def twitRestAPI( consumer_key,
     kwargs['wait_on_rate_limit_notify'] = kwargs.get('wait_on_rate_limit_notify',True)
     return API( auth, **kwargs )
 
-def all_follower_ids( api ):
+def all_follower_ids( api, usr_name_or_id ):
+    ids = []
+    for page in Cursor(api.followers_ids, usr_name_or_id).pages():
+        ids.extend(page)
+        time.sleep(60)
+    return ids
