@@ -92,37 +92,9 @@ class dictTwiterator( object ):
                 raise( e )
 
 class textTwiterator( object ):
-    def __init__(self, json_files, verbose = True):
+    def __init__(self, json_files, processor = TweetTokenizer().tokenize, verbose = True):
         self.json_files = json_files_from_list(json_files)
-        self.verbose = verbose
-
-    def __iter__( self ):
-        for f in self.json_files:
-            try:
-                with open(f, 'r') as fin:
-                    for line in fin:
-                        try:
-                            tweet = json.loads(line)
-                            yield tweet['text']
-                        except Exception as e:
-                            if self.verbose:
-                                print("Exception: %s" % e)
-                            continue
-            except IOError as ioe:
-                if self.verbose:
-                    print("IO Error %s" % ioe)
-                    print("--Filenmame: %s" % basename(f))
-                    print("--Directory: %s." % dirname(f))
-                yield None
-            except Exception as e:
-                if self.verbose:
-                    print("Exception encountered: %s" % e)
-                raise( e )
-
-class tokenizedTextTwiterator( object ):
-    def __init__(self, json_files, tknzr = TweetTokenizer().tokenize, verbose = True):
-        self.json_files = json_files_from_list(json_files)
-        self.tokenizer = tknzr
+        self.processor = processor
         self.verbose = verbose
 
     def __iter__( self ):
@@ -132,7 +104,7 @@ class tokenizedTextTwiterator( object ):
                     for line in fin:
                         try:
                             tweet = json.loads( line )
-                            yield self.tokenizer( tweet['text'] )
+                            yield self.processor( tweet['text'] )
                         except Exception as e:
                             if self.verbose:
                                 print("Exception: %s" % e)
@@ -150,6 +122,5 @@ class tokenizedTextTwiterator( object ):
 
 __all__ = [
             "dictTwiterator",
-            "textTwiterator",
-            "tokenizedTextTwiterator"
+            "textTwiterator"
           ]

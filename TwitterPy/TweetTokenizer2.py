@@ -296,14 +296,16 @@ class TweetTokenizer:
                  preserve_case=True,
                  reduce_len=False,
                  strip_handles=False,
-                 banish_emoji = False,
-                 banish_url = True ## TOM ADDED CODE
+                 banish_emoji = False, ## TOM ADDED CODE
+                 banish_url = True, ## TOM ADDED CODE
+                 min_word_len = 0 ## TOM ADDED CODE
                  ):
         self.preserve_case = preserve_case
         self.reduce_len = reduce_len
         self.strip_handles = strip_handles
         self.banish_emoji = banish_emoji ## TOM ADDED CODE
         self.banish_url = banish_url ## TOM ADDED CODE
+        self.min_word_len = min_word_len ## TOM ADDED CODE
 
     def tokenize(self, text):
         """
@@ -352,6 +354,13 @@ class TweetTokenizer:
         if not self.preserve_case:
             words = list(map((lambda x : x if EMOTICON_RE.search(x) else
                               x.lower()), words))
+
+        ## TOM ADDED CODE
+        if self.min_word_len > 1:
+            singles = re.compile('[A-Za-z0-9.,!?-_;:()]')
+            words = [ w for w in words if len(singles.findall(w)) == 0 or \
+                      len(singles.findall(w)) >= self.min_word_len ]
+
         return words
 
 ######################################################################
