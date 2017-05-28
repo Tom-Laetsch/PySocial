@@ -38,8 +38,11 @@ domains and tasks. The basic logic is this:
 
 from __future__ import absolute_import, unicode_literals
 import re
-from nltk.compat import htmlentitydefs, int2byte, unichr
-
+try:
+    from nltk.compat import htmlentitydefs, int2byte, unichr
+except:
+    from six import int2byte, unichr
+    from six.moves import html_entities
 ######## TOM ADDED CODE
 #from PyMoji import PyMoji
 from ..PyMoji import EMOJI_RE, EMOJI_COMPILED_RE
@@ -260,7 +263,10 @@ def _replace_html_entities(text, keep=(), remove_illegal=True, encoding='utf-8')
             if entity_body in keep:
                 return match.group(0)
             else:
-                number = htmlentitydefs.name2codepoint.get(entity_body)
+                try:
+                    number = htmlentitydefs.name2codepoint.get(entity_body)
+                except:
+                    number = html_entities.name2codepoint.get(entity_body)
         if number is not None:
             try:
                 return unichr(number)
