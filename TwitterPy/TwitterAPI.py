@@ -101,7 +101,7 @@ def all_timeline( api, usr_name_or_id, include_rts = False, sleep_btwn = 1 ):
     for page in Cursor( api.user_timeline,
                         id = usr_name_or_id,
                         count = 200,
-                        include_rts = include_rts ).pages(16):
+                        include_rts = include_rts ).pages():
         statuses.extend( page )
         #go slow to avoid rate limits: 900 (user) or 1500 (app) in 15 minutes
         time.sleep( sleep_btwn )
