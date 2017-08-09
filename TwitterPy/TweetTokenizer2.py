@@ -125,6 +125,7 @@ URLS = r"""			# Capture 1: entire matched URL
   )
 """
 
+
 #### TOM ADDED CODE
 URL_RE = re.compile(URLS, re.VERBOSE | re.I | re.UNICODE)
 ####
@@ -322,6 +323,8 @@ class TweetTokenizer:
         """
         # Fix HTML character entities:
         text = _replace_html_entities(text)
+        # For long strings of punctionation, things can go bad, so replace with shortened
+        text = reduce_punct_lengthening(text)
         # Remove URLS
         if self.banish_url:
             text = URL_RE.sub(' ', text)
@@ -372,6 +375,12 @@ class TweetTokenizer:
 ######################################################################
 # Normalization Functions
 ######################################################################
+
+###TOM ADDED CODE
+def reduce_punct_lengthening(text):
+    pattern = re.compile(r'(!|\?)\1{2,}')
+    return pattern.sub(r'\1\1\1', text)
+###
 
 def reduce_lengthening(text):
     """
